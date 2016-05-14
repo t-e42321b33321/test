@@ -1,0 +1,23 @@
+#!/bin/bash
+if [ $(hostname) != "proxy" ]
+  then
+    exit
+fi
+
+OLDMD5="$(cat /home/vagrant/md5 | awk '{print $1'})"
+NEWMD5="$(md5sum /vagrant/app.go | awk '{print $1'})"
+if [[ $OLDMD5 != $NEWMD5 ]]
+  then
+    echo $NEWMD5 > /home/vagrant/md5
+    go build -o ~/goapp /vagrant/app.go
+    ssh 192.168.56.101 sudo service goapp stop
+    scp ~/goapp 192.168.56.101:.
+    ssh 192.168.56.101 sudo mv /home/vagrant/goapp /opt/goapp/goapp
+    ssh 192.168.56.101 sudo service goapp start
+
+    ssh 192.168.56.102 sudo service goapp stop
+    scp ~/goapp 192.168.56.102:.
+    ssh 192.168.56.102 sudo mv /home/vagrant/goapp /opt/goapp/goapp
+    ssh 192.168.56.102 sudo service goapp start
+
+fi

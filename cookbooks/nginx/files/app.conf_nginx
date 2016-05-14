@@ -1,0 +1,16 @@
+upstream myapp1 {
+    server 192.168.56.101:8484 fail_timeout=3;
+    server 192.168.56.102:8484 fail_timeout=3;
+}
+
+server {
+    listen 80;
+
+    location /favicon.ico {
+               deny all;
+    }
+
+    location / {
+        proxy_pass http://myapp1;
+    }
+}
